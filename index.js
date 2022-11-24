@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
@@ -36,30 +36,43 @@ async function run() {
     const productCategoryCollection = client
       .db("laptopUtopia")
       .collection("productCategory");
-    /// All collections enD
+    // All collections enD
 
     // console.log("connect to db");
-    ///save user email and generate JWT
-    // app.put("/user/email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const user = req.body;
-    //   const filter = { email: email };
-    //   const options = { upsert: true };
-    //   const updateDoc = {
-    //     $set: user,
-    //   };
-    //   const result =await userCollection.updateOne(filter, updateDoc, options);
-    //   console.log(result);
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN,{expiresIn:'7d'});
-    // });
-    // res.send({ result, token });
-
-    // --1 Post in users collection
-    app.post("/users", async (req, res) => {
+    ///save user email (--1 put in users collection) and generate JWT
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
       const user = req.body;
-      console.log(user);
-      const result = await usersCollection.insertOne(user);
-      res.send(result);
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      console.log(result);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "7d",
+      });
+      res.send({ result, token });
+    });
+
+    /// --2 get product category from the database
+    app.get(`/productCategory`, async (req, res) => {
+      const query = {};
+      const options = await productCategoryCollection.find(query).toArray();
+      res.send(options);
+    });
+    // --2 get product  data for an individual category
+
+    app.get(`/productCategory/:id`, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const options = await productCategoryCollection.find(query).toArray();
+      res.send(options);
     });
   } finally {
   }
