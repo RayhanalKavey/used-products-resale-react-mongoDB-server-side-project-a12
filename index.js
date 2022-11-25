@@ -64,6 +64,18 @@ async function run() {
       res.send({ result, token });
     });
 
+    //get admin --1 get api for only buyer data
+    app.get(`/users/buyer`, async (req, res) => {
+      const query = { accountType: "Buyer Account" };
+      const options = await usersCollection.find(query).toArray();
+      res.send(options);
+    });
+    //get admin --1 get api for only buyer data
+    app.get(`/users/seller`, async (req, res) => {
+      const query = { accountType: "Seller Account" };
+      const options = await usersCollection.find(query).toArray();
+      res.send(options);
+    });
     //get admin --1 fetch this admin data using custom hook in the client site
     app.get(`/users/admin/:email`, async (req, res) => {
       const email = req.params.email;
