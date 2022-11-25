@@ -43,7 +43,7 @@ async function run() {
     // All collections enD
 
     // console.log("connect to db");
-    ///save user email (--1 put in users collection) and generate JWT ------------------------
+    ///save user email (--1 put in users collection) and generate JWT token------------------------
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -62,6 +62,31 @@ async function run() {
         expiresIn: "7d",
       });
       res.send({ result, token });
+    });
+
+    //get admin --1 fetch this admin data using custom hook in the client site
+    app.get(`/users/admin/:email`, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+      // console.log({ isAdmin: user?.role === "admin" });
+    });
+    //get buyer --1 fetch this  buyer data using custom hook in the client site workinG
+    app.get(`/users/buyer/:email`, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isBuyer: user?.accountType === "Buyer Account" });
+      // console.log({ isBuyer: user?.accountType === "Buyer Account" });
+    });
+    //get seller --1 fetch this  seller data using custom hook in the client site workinG
+    app.get(`/users/seller/:email`, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isSeller: user?.accountType === "Seller Account" });
+      console.log({ isSeller: user?.accountType === "Seller Account" });
     });
 
     /// --2 get product category from the database --------------------------------
