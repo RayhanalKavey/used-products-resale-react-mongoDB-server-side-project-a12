@@ -89,7 +89,10 @@ async function run() {
       const email = req.params.email;
       const query = { email };
       const user = await usersCollection.findOne(query);
-      res.send({ isBuyer: user?.accountType === "Buyer Account" });
+      res.send({
+        isBuyer:
+          user?.accountType !== "Seller Account" && user?.role !== "admin",
+      });
       // console.log({ isBuyer: user?.accountType === "Buyer Account" });
     });
     //get seller --1 fetch this  seller data using custom hook in the client site
