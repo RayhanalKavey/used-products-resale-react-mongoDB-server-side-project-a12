@@ -29,17 +29,21 @@ const client = new MongoClient(uri, {
 // ==============
 async function run() {
   try {
-    // All collections starT
+    // All collections starT------------------------
     //--1 User Collection
     const usersCollection = client.db("laptopUtopia").collection("users");
+
     //--2 Product Category Collection
     const productCategoryCollection = client
       .db("laptopUtopia")
       .collection("productCategory");
+
+    //--3 Booking collection
+    const bookingCollection = client.db("laptopUtopia").collection("bookings");
     // All collections enD
 
     // console.log("connect to db");
-    ///save user email (--1 put in users collection) and generate JWT
+    ///save user email (--1 put in users collection) and generate JWT ------------------------
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -60,7 +64,7 @@ async function run() {
       res.send({ result, token });
     });
 
-    /// --2 get product category from the database
+    /// --2 get product category from the database --------------------------------
     app.get(`/productCategory`, async (req, res) => {
       const query = {};
       const options = await productCategoryCollection.find(query).toArray();
@@ -71,8 +75,14 @@ async function run() {
     app.get(`/productCategory/:id`, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const options = await productCategoryCollection.find(query).toArray();
+      const options = await productCategoryCollection.findOne(query);
       res.send(options);
+    });
+    /// --3 post booking collection -------------------------------
+    app.post("/bookings", async (req, res) => {
+      const user = req.body;
+      const result = await bookingCollection.insertOne(user);
+      res.send(result);
     });
   } finally {
   }
