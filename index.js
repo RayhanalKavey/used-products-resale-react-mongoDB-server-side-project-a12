@@ -57,7 +57,7 @@ async function run() {
         updateDoc,
         options
       );
-      console.log(result);
+      // console.log(result);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "7d",
       });
@@ -84,7 +84,7 @@ async function run() {
       res.send({ isAdmin: user?.role === "admin" });
       // console.log({ isAdmin: user?.role === "admin" });
     });
-    //get buyer --1 fetch this  buyer data using custom hook in the client site workinG
+    //get buyer --1 fetch this  buyer data using custom hook in the client site
     app.get(`/users/buyer/:email`, async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -92,13 +92,21 @@ async function run() {
       res.send({ isBuyer: user?.accountType === "Buyer Account" });
       // console.log({ isBuyer: user?.accountType === "Buyer Account" });
     });
-    //get seller --1 fetch this  seller data using custom hook in the client site workinG
+    //get seller --1 fetch this  seller data using custom hook in the client site
     app.get(`/users/seller/:email`, async (req, res) => {
       const email = req.params.email;
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isSeller: user?.accountType === "Seller Account" });
-      console.log({ isSeller: user?.accountType === "Seller Account" });
+      // console.log({ isSeller: user?.accountType === "Seller Account" });
+    });
+
+    // //--1 deleting buyers/sellers workinG
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
     });
 
     /// --2 get product category from the database --------------------------------
