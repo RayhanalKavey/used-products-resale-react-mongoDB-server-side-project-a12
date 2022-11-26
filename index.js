@@ -40,7 +40,30 @@ async function run() {
 
     //--3 Booking collection
     const bookingCollection = client.db("laptopUtopia").collection("bookings");
+
+    // --4 product collection
+    const productCollection = client.db("laptopUtopia").collection("products");
     // All collections enD
+
+    // --4 get product collection
+    app.get(`/products`, async (req, res) => {
+      const query = {};
+      const options = await productCollection.find(query).toArray();
+      res.send(options);
+    });
+    // --4 get product from  product collection with category name for product component to show the product details to the product details page
+    app.get(`/products/:categoryName`, async (req, res) => {
+      const categoryName = req.params.categoryName;
+      const query = { categoryName };
+      const options = await productCollection.find(query).toArray();
+      res.send(options);
+    });
+    // --4 post product for adding new product workinG
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await usersCollection.insertOne(product);
+      res.send(result);
+    });
 
     // console.log("connect to db");
     ///save user email (--1 put in users collection) and generate JWT token------------------------
@@ -104,7 +127,7 @@ async function run() {
       // console.log({ isSeller: user?.accountType === "Seller Account" });
     });
 
-    // //--1 deleting buyers/sellers workinG
+    // //--1 deleting buyers/sellers
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -128,8 +151,8 @@ async function run() {
     });
     /// --3 post booking collection -------------------------------
     app.post("/bookings", async (req, res) => {
-      const user = req.body;
-      const result = await bookingCollection.insertOne(user);
+      const bookProduct = req.body;
+      const result = await bookingCollection.insertOne(bookProduct);
       res.send(result);
     });
   } finally {
