@@ -46,8 +46,10 @@ async function run() {
     // All collections enD
 
     // --4 get product collection
-    app.get(`/products`, async (req, res) => {
-      const query = {};
+    app.get(`/products/:name`, async (req, res) => {
+      const sellerName = req.params.name;
+      // console.log(sellerName);
+      const query = { sellerName };
       const options = await productCollection.find(query).toArray();
       res.send(options);
     });
@@ -61,7 +63,15 @@ async function run() {
     // --4 post product for adding new product workinG
     app.post("/products", async (req, res) => {
       const product = req.body;
-      const result = await usersCollection.insertOne(product);
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+    // // //--1 deleting products workinG
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(query);
       res.send(result);
     });
 
