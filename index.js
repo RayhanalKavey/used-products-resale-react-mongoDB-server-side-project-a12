@@ -116,6 +116,21 @@ async function run() {
       // console.log({ isSeller: user?.accountType === "Seller Account" });
     });
 
+    // --1 verify a seller workinG
+
+    app.put(`/users/seller/:id`, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = { $set: { verifySeller: "verified" } };
+      const result = await usersCollection.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // //--1 deleting buyers/sellers
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
@@ -186,7 +201,7 @@ async function run() {
       res.send(result);
     });
 
-    // //Temporary to update soldStatus  field on appointment collection (updatemany)--1
+    // //Temporary to update soldStatus  field on appointment collection (update many)--1
     // app.get("/addSoldStatus", async (req, res) => {
     //   const filter = {};
     //   const updatedDoc = { $set: { soldStatus: "Available" } };
