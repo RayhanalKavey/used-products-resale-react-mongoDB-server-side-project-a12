@@ -53,27 +53,6 @@ async function run() {
       const options = await productCollection.find(query).toArray();
       res.send(options);
     });
-    // --4 get product from  product collection with category name for product component to show the product details to the product details page
-    app.get(`/products/:categoryName`, async (req, res) => {
-      const categoryName = req.params.categoryName;
-      const query = { categoryName };
-      const options = await productCollection.find(query).toArray();
-      res.send(options);
-    });
-    // --4 post product for adding new product workinG
-    app.post("/products", async (req, res) => {
-      const product = req.body;
-      const result = await productCollection.insertOne(product);
-      res.send(result);
-    });
-    // // //--1 deleting products workinG
-    app.delete("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const query = { _id: ObjectId(id) };
-      const result = await productCollection.deleteOne(query);
-      res.send(result);
-    });
 
     // console.log("connect to db");
     ///save user email (--1 put in users collection) and generate JWT token------------------------
@@ -163,6 +142,47 @@ async function run() {
     app.post("/bookings", async (req, res) => {
       const bookProduct = req.body;
       const result = await bookingCollection.insertOne(bookProduct);
+      res.send(result);
+    });
+    /// --4 get product from  product collection with category name for product component to show the product details to the product details page
+    app.get(`/products`, async (req, res) => {
+      // console.log(req.query.categoryName);
+      let query = {};
+      if (req.query.categoryName) {
+        query = {
+          categoryName: req.query.categoryName,
+        };
+      }
+
+      const options = await productCollection.find(query).toArray();
+      res.send(options);
+    });
+    // --4 post product for adding new product
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+    // // //--4 deleting products
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // --4 add advertised role to the product workinG
+    app.put("/products/advertised/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = { $set: { advertisementStatus: "advertised" } };
+      const result = await productCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
       res.send(result);
     });
   } finally {
