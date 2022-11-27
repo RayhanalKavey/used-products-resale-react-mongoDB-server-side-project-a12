@@ -174,7 +174,7 @@ async function run() {
     // --4 add advertised role to the product workinG
     app.put("/products/advertised/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updatedDoc = { $set: { advertisementStatus: "advertised" } };
@@ -185,6 +185,19 @@ async function run() {
       );
       res.send(result);
     });
+
+    // //Temporary to update soldStatus  field on appointment collection (updatemany)--1
+    // app.get("/addSoldStatus", async (req, res) => {
+    //   const filter = {};
+    //   const updatedDoc = { $set: { soldStatus: "Available" } };
+    //   const options = { upsert: true };
+    //   const result = await productCollection.updateMany(
+    //     filter,
+    //     updatedDoc,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
   } finally {
   }
 }
