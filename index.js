@@ -240,7 +240,9 @@ async function run() {
       const payment = req.body;
       const result = await paymentCollection.insertOne(payment);
       const id = payment.bookingId;
+      const idForFindingProduct = payment?.bookedProductId;
       const query = { _id: ObjectId(id) };
+      const filter = { _id: ObjectId(idForFindingProduct) };
       const updatedDoc = {
         $set: {
           paymentStatus: "paid",
@@ -251,10 +253,10 @@ async function run() {
         query,
         updatedDoc
       );
-      // const updateProductCollection = await productCollection.updateOne(
-      //   query,
-      //   updatedDoc
-      // );
+      const updateProductCollection = await productCollection.updateOne(
+        filter,
+        updatedDoc
+      );
       res.send(result);
     });
 
