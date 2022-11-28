@@ -167,6 +167,15 @@ async function run() {
       const result = await bookingCollection.insertOne(bookProduct);
       res.send(result);
     });
+
+    //--3 Get data from booking collection for payment
+    app.get(`/bookings/:id`, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const options = await bookingCollection.findOne(query);
+      res.send(options);
+    });
+
     /// --4 get product from  product collection with category name for product component to show the product details to the product details page
     app.get(`/products`, async (req, res) => {
       // console.log(req.query.categoryName);
