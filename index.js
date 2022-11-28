@@ -153,7 +153,15 @@ async function run() {
       const options = await productCategoryCollection.findOne(query);
       res.send(options);
     });
-    /// --3 post booking collection -------------------------------
+
+    /// --3 get Booking collection ------------------------------
+    app.get(`/bookings`, async (req, res) => {
+      const query = {};
+      const options = await bookingCollection.find(query).toArray();
+      res.send(options);
+    });
+
+    // --3 post booking collection -
     app.post("/bookings", async (req, res) => {
       const bookProduct = req.body;
       const result = await bookingCollection.insertOne(bookProduct);
