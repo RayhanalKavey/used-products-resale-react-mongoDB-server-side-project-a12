@@ -44,6 +44,8 @@ async function run() {
 
     // --4 product collection
     const productCollection = client.db("laptopUtopia").collection("products");
+    // --5 product collection
+    const paymentCollection = client.db("laptopUtopia").collection("payments");
     // All collections enD
 
     // --4 get product collection
@@ -218,7 +220,7 @@ async function run() {
       );
       res.send(result);
     });
-    /// CREATE PAYMENT INTENT--------------
+    /// --5 CREATE PAYMENT INTENT--------------
     app.post("/create-payment-intent", async (req, res) => {
       const booking = req.body;
       const price = booking.price;
@@ -232,6 +234,28 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+    // --5
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+      const id = payment.bookingId;
+      const query = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paymentStatus: "paid",
+          transactionId: payment.transactionId,
+        },
+      };
+      const updateBookingCollection = await bookingCollection.updateOne(
+        query,
+        updatedDoc
+      );
+      // const updateProductCollection = await productCollection.updateOne(
+      //   query,
+      //   updatedDoc
+      // );
+      res.send(result);
     });
 
     // //Temporary to update soldStatus  field on appointment collection (update many)--1
