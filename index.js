@@ -46,7 +46,32 @@ async function run() {
     const productCollection = client.db("laptopUtopia").collection("products");
     // --5 product collection
     const paymentCollection = client.db("laptopUtopia").collection("payments");
+    // --6 Reported items
+    const reportedCollection = client.db("laptopUtopia").collection("reports");
     // All collections enD
+
+    // --6 . post to reported collection
+    app.post("/reports", async (req, res) => {
+      const reportedProduct = req.body;
+      // console.log(reportedProduct);
+      const result = await reportedCollection.insertOne(reportedProduct);
+      res.send(result);
+    });
+
+    // //--6 deleting report workinG
+    app.delete("/reports/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const filter = { _id: ObjectId(id) };
+      const result = await reportedCollection.deleteOne(filter);
+      res.send(result);
+    });
+    /// --6 get reported products
+    app.get(`/reports`, async (req, res) => {
+      const query = {};
+      const options = await reportedCollection.find(query).toArray();
+      res.send(options);
+    });
 
     // --4 get product collection
     app.get(`/products/:name`, async (req, res) => {
