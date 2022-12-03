@@ -2,8 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
+// laptop-utopia-server.vercel.app
 
-require("dotenv").config();
+https: require("dotenv").config();
 require("colors");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -21,11 +22,24 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-// client.connect((err) => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
+
+// =========================================== workinG verify jwt function-------------------------
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  //if token not given notE security layer --1
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized access!" });
+  }
+  const token = authHeader.split(" ")[1];
+  //if token not valid notE security layer --2 //if expired token then you get this return by using this status logged out the uer
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access!" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 
 // ==============
 async function run() {
@@ -58,7 +72,7 @@ async function run() {
       res.send(result);
     });
 
-    // //--6 deleting report workinG
+    // //--6 deleting report
     app.delete("/reports/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
@@ -83,7 +97,7 @@ async function run() {
     });
 
     // console.log("connect to db");
-    ///save user email (--1 put in users collection) and generate JWT token------------------------
+    ///save user email (--1 put in users collection) and generate JWT token------------------------workinG
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -99,7 +113,7 @@ async function run() {
       );
       // console.log(result);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-        expiresIn: "7d",
+        expiresIn: "4h",
       });
       res.send({ result, token });
     });
@@ -182,9 +196,17 @@ async function run() {
       res.send(options);
     });
 
-    /// --3 get Booking collection ------------------------------
-    app.get(`/bookings`, async (req, res) => {
-      const query = {};
+    /// --3 get Booking collection ------------------------------ workinG
+    app.get(`/bookings`, verifyJWT, async (req, res) => {
+      // console.log(req.headers.authorization);
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+
+      ///if the verified token's email is the logged in users email notE security layer --3
+      if (email !== decodedEmail) {
+        return res.status(403).send({ message: "Forbidden Access!" });
+      }
+      const query = { email: email };
       const options = await bookingCollection.find(query).toArray();
       res.send(options);
     });
