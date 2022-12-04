@@ -23,9 +23,10 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-// =========================================== workinG verify jwt function-------------------------
+// =========================================== verify jwt function-------------------------workinG
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
+  // console.log("inside verify JWT authHeader", authHeader);
   //if token not given notE security layer --1
   if (!authHeader) {
     return res.status(401).send({ message: "Unauthorized access!" });
@@ -63,6 +64,23 @@ async function run() {
     // --6 Reported items
     const reportedCollection = client.db("laptopUtopia").collection("reports");
     // All collections enD
+    //=========================================
+    //verify admin///notE: Make sure you run verify admin after verifyJWT=------------- workinG
+    const verifyAdmin = async (req, res, next) => {
+      // console.log("inside verify admin", req.decoded);
+      const decodedEmail = req.decoded.email;
+      // console.log("from verify admin decoded email", decodedEmail);
+      const query = { email: decodedEmail };
+      const user = await usersCollection.findOne(query);
+      // console.log(user);
+      if (user?.role !== "admin") {
+        console.log("this user is not an  admin");
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      // console.log("this user is admin");
+      next();
+    };
+    //=========================================
 
     // --6 . post to reported collection
     app.post("/reports", async (req, res) => {
@@ -97,7 +115,7 @@ async function run() {
     });
 
     // console.log("connect to db");
-    ///save user email (--1 put in users collection) and generate JWT token------------------------workinG
+    ///save user email (--1 put in users collection) and generate JWT token
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -118,14 +136,23 @@ async function run() {
       res.send({ result, token });
     });
 
-    //get admin --1 get api for only buyer data
-    app.get(`/users/buyer`, async (req, res) => {
+    //get admin --1 get api for only buyer data -------------------------------------workinG
+    app.get(`/users/buyer`, verifyJWT, verifyAdmin, async (req, res) => {
+      // console.log(req.headers.authorization);
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+      // console.log("decoded email inside buyers", decodedEmail);
       const query = { accountType: "Buyer Account" };
       const options = await usersCollection.find(query).toArray();
       res.send(options);
     });
-    //get admin --1 get api for only buyer data
-    app.get(`/users/seller`, async (req, res) => {
+    //get admin --1 get api for only seller data ------------------------------------workinG
+    app.get(`/users/seller`, verifyJWT, verifyAdmin, async (req, res) => {
+      // console.log(req.headers.authorization);
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+      // console.log("decoded email inside Seller", decodedEmail);
+
       const query = { accountType: "Seller Account" };
       const options = await usersCollection.find(query).toArray();
       res.send(options);
@@ -138,7 +165,7 @@ async function run() {
       res.send({ isAdmin: user?.role === "admin" });
       // console.log({ isAdmin: user?.role === "admin" });
     });
-    //get buyer --1 fetch this  buyer data using custom hook in the client site
+    //get buyer --1 fetch this  buyer data using custom hook in the client site----------
     app.get(`/users/buyer/:email`, async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -158,7 +185,7 @@ async function run() {
       // console.log({ isSeller: user?.accountType === "Seller Account" });
     });
 
-    // --1 verify a seller
+    // --1 verify a seller----------------------
 
     app.put(`/users/seller/:id`, async (req, res) => {
       const id = req.params.id;
@@ -196,12 +223,12 @@ async function run() {
       res.send(options);
     });
 
-    /// --3 get Booking collection ------------------------------ workinG
+    /// --3 get Booking collection ---------------------------------------------- workinG
     app.get(`/bookings`, verifyJWT, async (req, res) => {
       // console.log(req.headers.authorization);
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
-
+      // console.log("decoded email inside bookings", decodedEmail);
       ///if the verified token's email is the logged in users email notE security layer --3
       if (email !== decodedEmail) {
         return res.status(403).send({ message: "Forbidden Access!" });
