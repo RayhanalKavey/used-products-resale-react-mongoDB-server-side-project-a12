@@ -4,7 +4,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
 // laptop-utopia-server.vercel.app
 
-https: require("dotenv").config();
+// https:
+require("dotenv").config();
 require("colors");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -23,10 +24,9 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-// =========================================== verify jwt function-------------------------workinG
+// =========================================== verify jwt function
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  // console.log("inside verify JWT authHeader", authHeader);
   //if token not given notE security layer --1
   if (!authHeader) {
     return res.status(401).send({ message: "Unauthorized access!" });
@@ -65,19 +65,15 @@ async function run() {
     const reportedCollection = client.db("laptopUtopia").collection("reports");
     // All collections enD
     //=========================================
-    //verify admin///notE: Make sure you run verify admin after verifyJWT=------------- workinG
+    //verify admin///notE: Make sure you run verify admin after verifyJWT
     const verifyAdmin = async (req, res, next) => {
-      // console.log("inside verify admin", req.decoded);
       const decodedEmail = req.decoded.email;
-      // console.log("from verify admin decoded email", decodedEmail);
       const query = { email: decodedEmail };
       const user = await usersCollection.findOne(query);
-      // console.log(user);
       if (user?.role !== "admin") {
         console.log("this user is not an  admin");
         return res.status(403).send({ message: "Forbidden access" });
       }
-      // console.log("this user is admin");
       next();
     };
     //=========================================
@@ -85,7 +81,6 @@ async function run() {
     // --6 . post to reported collection
     app.post("/reports", async (req, res) => {
       const reportedProduct = req.body;
-      // console.log(reportedProduct);
       const result = await reportedCollection.insertOne(reportedProduct);
       res.send(result);
     });
@@ -93,7 +88,6 @@ async function run() {
     // //--6 deleting report
     app.delete("/reports/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const filter = { _id: ObjectId(id) };
       const result = await reportedCollection.deleteOne(filter);
       res.send(result);
@@ -108,7 +102,6 @@ async function run() {
     // --4 get product collection
     app.get(`/products/:name`, async (req, res) => {
       const sellerName = req.params.name;
-      // console.log(sellerName);
       const query = { sellerName };
       const options = await productCollection.find(query).toArray();
       res.send(options);
@@ -129,30 +122,24 @@ async function run() {
         updateDoc,
         options
       );
-      // console.log(result);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "4h",
       });
       res.send({ result, token });
     });
 
-    //get admin --1 get api for only buyer data -------------------------------------workinG
+    //get admin --1 get api for only buyer data
     app.get(`/users/buyer`, verifyJWT, verifyAdmin, async (req, res) => {
-      // console.log(req.headers.authorization);
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
-      // console.log("decoded email inside buyers", decodedEmail);
       const query = { accountType: "Buyer Account" };
       const options = await usersCollection.find(query).toArray();
       res.send(options);
     });
-    //get admin --1 get api for only seller data ------------------------------------workinG
-    app.get(`/users/seller`, verifyJWT, verifyAdmin, async (req, res) => {
-      // console.log(req.headers.authorization);
+    //get admin --1 get api for only seller data
+    app.get(`/users/seller`, verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
-      // console.log("decoded email inside Seller", decodedEmail);
-
       const query = { accountType: "Seller Account" };
       const options = await usersCollection.find(query).toArray();
       res.send(options);
@@ -163,7 +150,6 @@ async function run() {
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isAdmin: user?.role === "admin" });
-      // console.log({ isAdmin: user?.role === "admin" });
     });
     //get buyer --1 fetch this  buyer data using custom hook in the client site----------
     app.get(`/users/buyer/:email`, async (req, res) => {
@@ -174,7 +160,6 @@ async function run() {
         isBuyer:
           user?.accountType !== "Seller Account" && user?.role !== "admin",
       });
-      // console.log({ isBuyer: user?.accountType === "Buyer Account" });
     });
     //get seller --1 fetch this  seller data using custom hook in the client site
     app.get(`/users/seller/:email`, async (req, res) => {
@@ -182,7 +167,6 @@ async function run() {
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isSeller: user?.accountType === "Seller Account" });
-      // console.log({ isSeller: user?.accountType === "Seller Account" });
     });
 
     // --1 verify a seller----------------------
@@ -223,12 +207,10 @@ async function run() {
       res.send(options);
     });
 
-    /// --3 get Booking collection ---------------------------------------------- workinG
+    /// --3 get Booking collection
     app.get(`/bookings`, verifyJWT, async (req, res) => {
-      // console.log(req.headers.authorization);
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
-      // console.log("decoded email inside bookings", decodedEmail);
       ///if the verified token's email is the logged in users email notE security layer --3
       if (email !== decodedEmail) {
         return res.status(403).send({ message: "Forbidden Access!" });
@@ -255,7 +237,6 @@ async function run() {
 
     /// --4 get product from  product collection with category name for product component to show the product details to the product details page
     app.get(`/products`, async (req, res) => {
-      // console.log(req.query.categoryName);
       let query = {};
       if (req.query.categoryName) {
         query = {
@@ -280,10 +261,9 @@ async function run() {
       res.send(result);
     });
 
-    // --4 add advertised role to the product workinG
+    // --4 add advertised role to the product
     app.put("/products/advertised/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updatedDoc = { $set: { advertisementStatus: "advertised" } };
