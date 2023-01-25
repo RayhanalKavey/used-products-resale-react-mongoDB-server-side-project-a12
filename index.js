@@ -238,15 +238,12 @@ async function run() {
     /// --4 get product from  product collection with category name for product component to show the product details to the product details page
     app.get(`/products`, async (req, res) => {
       let query = {};
-      if (req.query.categoryName) {
-        query = {
-          categoryName: req.query.categoryName,
-        };
-      }
 
       const options = await productCollection.find(query).toArray();
       res.send(options);
     });
+    // to find sellers product
+
     // --4 post product for adding new product
     app.post("/products", async (req, res) => {
       const product = req.body;
